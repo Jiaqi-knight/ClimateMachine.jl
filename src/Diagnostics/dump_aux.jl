@@ -25,8 +25,8 @@ function setup_dump_aux_diagnostics(
     return DiagnosticsGroup(
         "DumpAux",
         Diagnostics.dump_aux_init,
-        Diagnostics.dump_aux_fini,
         Diagnostics.dump_aux_collect,
+        Diagnostics.dump_aux_fini,
         interval,
         out_prefix,
         writer,

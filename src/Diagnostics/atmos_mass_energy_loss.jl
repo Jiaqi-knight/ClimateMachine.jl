@@ -36,8 +36,8 @@ function setup_atmos_mass_energy_loss(
     return DiagnosticsGroup(
         "AtmosMassEnergyLoss",
         Diagnostics.atmos_mass_energy_loss_init,
-        Diagnostics.atmos_mass_energy_loss_fini,
         Diagnostics.atmos_mass_energy_loss_collect,
+        Diagnostics.atmos_mass_energy_loss_fini,
         interval,
         out_prefix,
         writer,

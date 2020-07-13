@@ -59,8 +59,8 @@ function setup_atmos_core_diagnostics(
     return DiagnosticsGroup(
         "AtmosLESCore",
         Diagnostics.atmos_les_core_init,
-        Diagnostics.atmos_les_core_fini,
         Diagnostics.atmos_les_core_collect,
+        Diagnostics.atmos_les_core_fini,
         interval,
         out_prefix,
         writer,

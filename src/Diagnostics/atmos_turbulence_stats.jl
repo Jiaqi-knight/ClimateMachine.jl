@@ -46,8 +46,8 @@ function setup_atmos_turbulence_stats(
     return DiagnosticsGroup(
         "AtmosTurbulenceStats",
         Diagnostics.atmos_turbulence_stats_init,
-        Diagnostics.atmos_turbulence_stats_fini,
         Diagnostics.atmos_turbulence_stats_collect,
+        Diagnostics.atmos_turbulence_stats_fini,
         interval,
         out_prefix,
         writer,

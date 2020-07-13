@@ -45,8 +45,8 @@ function setup_atmos_refstate_perturbations(
     return DiagnosticsGroup(
         "AtmosRefStatePerturbations",
         Diagnostics.atmos_refstate_perturbations_init,
-        Diagnostics.atmos_refstate_perturbations_fini,
         Diagnostics.atmos_refstate_perturbations_collect,
+        Diagnostics.atmos_refstate_perturbations_fini,
         interval,
         out_prefix,
         writer,
@@ -262,7 +262,7 @@ function atmos_refstate_perturbations_collect(
             num_atmos_refstate_perturbation_vars(atmos, FT),
         )
 
-        @traverse_interpolated_grid nlong nlat nlevel begin
+        @traverse_i_grid nlong nlat nlevel begin
             statei = Vars{vars_state(atmos, Prognostic(), FT)}(view(
                 all_state_data,
                 lo,

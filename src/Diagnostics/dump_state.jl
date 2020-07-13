@@ -25,8 +25,8 @@ function setup_dump_state_diagnostics(
     return DiagnosticsGroup(
         "DumpState",
         Diagnostics.dump_state_init,
-        Diagnostics.dump_state_fini,
         Diagnostics.dump_state_collect,
+        Diagnostics.dump_state_fini,
         interval,
         out_prefix,
         writer,

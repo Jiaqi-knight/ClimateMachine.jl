@@ -91,8 +91,8 @@ function setup_atmos_default_diagnostics(
     return DiagnosticsGroup(
         "AtmosGCMDefault",
         Diagnostics.atmos_gcm_default_init,
-        Diagnostics.atmos_gcm_default_fini,
         Diagnostics.atmos_gcm_default_collect,
+        Diagnostics.atmos_gcm_default_fini,
         interval,
         out_prefix,
         writer,
@@ -336,8 +336,6 @@ function atmos_gcm_default_collect(dgngrp::DiagnosticsGroup, currtime)
     end
     FT = eltype(state_data)
 
-    # TODO: can this be done in one pass?
-    #
     # Non-local vars, e.g. relative vorticity
     vgrad = VectorGradients(dg, Q)
     vort = Vorticity(dg, vgrad)
@@ -407,7 +405,7 @@ function atmos_gcm_default_collect(dgngrp::DiagnosticsGroup, currtime)
             num_atmos_gcm_default_simple_3d_vars(atmos, FT),
         )
 
-        @traverse_interpolated_grid nlong nlat nlevel begin
+        @traverse_i_grid nlong nlat nlevel begin
             statei = Vars{vars_state(atmos, Prognostic(), FT)}(view(
                 all_state_data,
                 lo,

@@ -3,20 +3,16 @@
 
 # Helper macro to iterate over the DG grid. Generates the needed loops
 # and indices: `eh`, `ev`, `e`, `k,`, `j`, `i`, `ijk`.
-macro traverse_dg_grid(grid_info, topl_info, expr)
+macro visitQ(nhorzelem, nvertelem, Nqk, Nq, expr)
     return esc(
         quote
-            for eh in 1:($(topl_info).nhorzrealelem)
-                for ev in 1:($(topl_info).nvertelem)
-                    e = ev + (eh - 1) * $(topl_info).nvertelem
-                    for k in 1:($(grid_info).Nqk)
-                        evk = $(grid_info).Nqk * (ev - 1) + k
-                        for j in 1:$(grid_info).Nq[2]
-                            for i in 1:$(grid_info).Nq[1]
-                                ijk =
-                                    i +
-                                    $(grid_info).Nq[1] *
-                                    ((j - 1) + $(grid_info).Nq[2] * (k - 1))
+            for eh in 1:($nhorzelem)
+                for ev in 1:($nvertelem)
+                    e = ev + (eh - 1) * $nvertelem
+                    for k in 1:($Nqk)
+                        for j in 1:($Nq)
+                            for i in 1:($Nq)
+                                ijk = i + $Nq * ((j - 1) + $Nq * (k - 1))
                                 $expr
                             end
                         end
@@ -28,8 +24,8 @@ macro traverse_dg_grid(grid_info, topl_info, expr)
 end
 
 # Helper macro to iterate over a 3D array. Used for walking the
-# interpolated (GCM) grid.
-macro traverse_i_grid(nlong, nlat, nlevel, expr)
+# interpolated grid.
+macro visitI(nlong, nlat, nlevel, expr)
     return esc(quote
         for lo in 1:($nlong)
             for la in 1:($nlat)
@@ -42,8 +38,7 @@ macro traverse_i_grid(nlong, nlat, nlevel, expr)
 end
 
 # Helpers to extract data from the various state arrays
-function extract_state(dg, state, ijk, e, st::AbstractStateType)
-    bl = dg.balance_law
+function extract_state(bl, state, ijk, e, st::AbstractStateType)
     FT = eltype(state)
     num_state = number_states(bl, st)
     local_state = MArray{Tuple{num_state}, FT}(undef)

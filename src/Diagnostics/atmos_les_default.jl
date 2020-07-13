@@ -83,8 +83,8 @@ function setup_atmos_default_diagnostics(
     return DiagnosticsGroup(
         "AtmosLESDefault",
         Diagnostics.atmos_les_default_init,
-        Diagnostics.atmos_les_default_fini,
         Diagnostics.atmos_les_default_collect,
+        Diagnostics.atmos_les_default_fini,
         interval,
         out_prefix,
         writer,
