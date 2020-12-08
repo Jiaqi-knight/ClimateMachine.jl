@@ -9,20 +9,26 @@ end
 
 include(joinpath(@__DIR__, "compute_mse.jl"))
 
+# Get PyCLES_output dataset folder:
+#! format: off
+data_files = Dict()
+data_files[:Bomex] = Dataset(joinpath(PyCLES_output_dataset_path, "Bomex.nc"), "r")
+#! format: on
+
 #! format: off
 best_mse = Dict()
 best_mse[:Bomex] = Dict()
-best_mse[:Bomex]["ρ"] = 3.4943021267397123e-02
-best_mse[:Bomex]["ρu[1]"] = 3.0714039084256679e+03
-best_mse[:Bomex]["ρu[2]"] = 1.3375796498101822e-03
-best_mse[:Bomex]["moisture.ρq_tot"] = 4.8463531712319707e-02
-best_mse[:Bomex]["turbconv.environment.ρatke"] = 6.6626829120765967e+02
+best_mse[:Bomex]["ρ"] = 3.0714039084256697e+03
+best_mse[:Bomex]["ρu[1]"] = 3.0714039084256697e+03
+best_mse[:Bomex]["ρu[2]"] = 4.8463531712315697e-02
+best_mse[:Bomex]["moisture.ρq_tot"] = 4.8463531712315697e-02
+best_mse[:Bomex]["turbconv.environment.ρatke"] = 6.6626829120676109e+02
 best_mse[:Bomex]["turbconv.environment.ρaθ_liq_cv"] = 8.5667200586224638e+01
-best_mse[:Bomex]["turbconv.environment.ρaq_tot_cv"] = 1.6455724508026515e+02
-best_mse[:Bomex]["turbconv.updraft[1].ρa"] = 7.9577347148736081e+01
-best_mse[:Bomex]["turbconv.updraft[1].ρaw"] = 8.4352020356445540e-02
-best_mse[:Bomex]["turbconv.updraft[1].ρaθ_liq"] = 9.0101465706333848e+00
-best_mse[:Bomex]["turbconv.updraft[1].ρaq_tot"] = 1.0768121066483779e+01
+best_mse[:Bomex]["turbconv.environment.ρaq_tot_cv"] = 1.6455724508026486e+02
+best_mse[:Bomex]["turbconv.updraft[1].ρa"] = 7.9577347148791929e+01
+best_mse[:Bomex]["turbconv.updraft[1].ρaw"] = 8.4352020358740801e-02
+best_mse[:Bomex]["turbconv.updraft[1].ρaθ_liq"] = 9.0101465706351167e+00
+best_mse[:Bomex]["turbconv.updraft[1].ρaq_tot"] = 1.0768121066485671e+01
 #! format: on
 
 sufficient_mse(computed_mse, best_mse) = computed_mse <= best_mse + eps()
@@ -53,10 +59,30 @@ computed_mse = Dict(
     test_mse(computed_mse[:Bomex], best_mse[:Bomex], "moisture.ρq_tot")
     test_mse(computed_mse[:Bomex], best_mse[:Bomex], "turbconv.updraft[1].ρa")
     test_mse(computed_mse[:Bomex], best_mse[:Bomex], "turbconv.updraft[1].ρaw")
-    test_mse(computed_mse[:Bomex], best_mse[:Bomex], "turbconv.updraft[1].ρaθ_liq")
-    test_mse(computed_mse[:Bomex], best_mse[:Bomex], "turbconv.updraft[1].ρaq_tot")
-    test_mse(computed_mse[:Bomex], best_mse[:Bomex], "turbconv.environment.ρatke")
-    test_mse(computed_mse[:Bomex], best_mse[:Bomex], "turbconv.environment.ρaθ_liq_cv")
-    test_mse(computed_mse[:Bomex], best_mse[:Bomex], "turbconv.environment.ρaq_tot_cv")
+    test_mse(
+        computed_mse[:Bomex],
+        best_mse[:Bomex],
+        "turbconv.updraft[1].ρaθ_liq",
+    )
+    test_mse(
+        computed_mse[:Bomex],
+        best_mse[:Bomex],
+        "turbconv.updraft[1].ρaq_tot",
+    )
+    test_mse(
+        computed_mse[:Bomex],
+        best_mse[:Bomex],
+        "turbconv.environment.ρatke",
+    )
+    test_mse(
+        computed_mse[:Bomex],
+        best_mse[:Bomex],
+        "turbconv.environment.ρaθ_liq_cv",
+    )
+    test_mse(
+        computed_mse[:Bomex],
+        best_mse[:Bomex],
+        "turbconv.environment.ρaq_tot_cv",
+    )
     #! format: on
 end
