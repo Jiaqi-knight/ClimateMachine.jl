@@ -47,6 +47,7 @@ using ClimateMachine.Problems
 
 import ..BalanceLaws:
     vars_state,
+    precompute,
     flux_first_order!,
     flux_second_order!,
     source!,
@@ -812,8 +813,10 @@ function init_state_auxiliary!(
     )
 end
 
-precompute(atmos::AtmosModel, args, ::Source) =
-    (ts = recover_thermo_state(atmos, args.state, args.aux),)
+precompute(atmos::AtmosModel, args, tt::Source) = (
+    ts = recover_thermo_state(atmos, args.state, args.aux),
+    turbconv = precompute(atmos.turbconv, args, tt),
+)
 
 """
     source!(

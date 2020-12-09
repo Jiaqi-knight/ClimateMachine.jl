@@ -4,11 +4,7 @@
     entr_detr(
         m::AtmosModel{FT},
         entr::EntrainmentDetrainment,
-        state::Vars,
-        aux::Vars,
-        t::Real,
-        ts,
-        env,
+        args,
         i,
     ) where {FT}
 Returns the dynamic entrainment and detrainment rates,
@@ -16,24 +12,18 @@ as well as the turbulent entrainment rate, following
 Cohen et al. (JAMES, 2020), given:
  - `m`, an `AtmosModel`
  - `entr`, an `EntrainmentDetrainment` model
- - `state`, state variables
- - `aux`, auxiliary variables
- - `t`, the time
- - `ts`, NamedTuple of thermodynamic states
- - `env`, NamedTuple of environment variables
+ - `args`, a NamedTuple of top-level arguments
  - `i`, index of the updraft
 """
 function entr_detr(
     m::AtmosModel{FT},
     entr::EntrainmentDetrainment,
-    state::Vars,
-    aux::Vars,
-    t::Real,
-    ts,
-    env,
+    args,
     i,
 ) where {FT}
-
+    @unpack state, aux, t = args
+    @unpack ts = args.precomputed
+    @unpack env = args.precomputed.turbconv
     # Alias convention:
     gm = state
     en = state.turbconv.environment

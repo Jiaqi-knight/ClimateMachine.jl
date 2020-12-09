@@ -59,12 +59,16 @@ new_thermo_state_en(
 ) = new_thermo_state_en(bl, bl.moisture, state, aux, ts)
 
 """
-    recover_thermo_state_all(bl, state, aux)
+    recover_thermo_state_all(bl, state, aux, ts = new_thermo_state(bl, state, aux))
 
 Recover NamedTuple of all thermo states
 """
-function recover_thermo_state_all(bl, state, aux)
-    ts = new_thermo_state(bl, state, aux)
+function recover_thermo_state_all(
+    bl,
+    state,
+    aux,
+    ts = new_thermo_state(bl, state, aux),
+)
     return (
         gm = ts,
         en = new_thermo_state_en(bl, bl.moisture, state, aux, ts),
