@@ -121,19 +121,26 @@ eq_tends(
 
 # Mass
 eq_tends(pv::PV, m::AtmosModel, tt::Flux{SecondOrder}) where {PV <: Mass} =
-    (eq_tends(pv, m.moisture, tt)...,)
+    (eq_tends(pv, m.moisture, tt)..., eq_tends(pv, m.hyperdiffusion, tt)...)
 
 # Momentum
 eq_tends(pv::PV, m::AtmosModel, tt::Flux{SecondOrder}) where {PV <: Momentum} =
-    (ViscousStress{PV}(), eq_tends(pv, m.moisture, tt)...)
+    (
+        ViscousStress{PV}(),
+        eq_tends(pv, m.moisture, tt)...,
+        eq_tends(pv, m.hyperdiffusion, tt)...,
+    )
 
 # Energy
-eq_tends(pv::PV, ::AtmosModel, ::Flux{SecondOrder}) where {PV <: Energy} =
-    (ViscousFlux{PV}(), DiffEnthalpyFlux{PV}())
+eq_tends(pv::PV, ::AtmosModel, ::Flux{SecondOrder}) where {PV <: Energy} = (
+    ViscousFlux{PV}(),
+    DiffEnthalpyFlux{PV}(),
+    eq_tends(pv, m.hyperdiffusion, tt)...,
+)
 
 # Moisture
 eq_tends(pv::PV, m::AtmosModel, tt::Flux{SecondOrder}) where {PV <: Moisture} =
-    (eq_tends(pv, m.moisture, tt)...,)
+    (eq_tends(pv, m.moisture, tt)..., eq_tends(pv, m.hyperdiffusion, tt)...)
 
 # Precipitation
 eq_tends(

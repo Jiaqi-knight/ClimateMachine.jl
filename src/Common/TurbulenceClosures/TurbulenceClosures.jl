@@ -52,7 +52,7 @@ using ..BalanceLaws
 
 import ..BalanceLaws:
     vars_state,
-    flux_second_order!,
+    eq_tends,
     compute_gradient_argument!,
     compute_gradient_flux!,
     transform_post_gradient_laplacian!
@@ -170,7 +170,6 @@ function transform_post_gradient_laplacian!(
     aux::Vars,
     t::Real,
 ) end
-function flux_second_order!(h::HyperDiffusion, flux::Grad, args) end
 function compute_gradient_flux!(
     h::HyperDiffusion,
     diffusive::Vars,
@@ -880,14 +879,6 @@ function transform_post_gradient_laplacian!(
     hyperdiffusive.hyperdiffusion.ν∇³q_tot = ν₄_q_tot * ∇Δq_tot
 end
 
-function flux_second_order!(h::EquilMoistBiharmonic, flux::Grad, args)
-    @unpack state, hyperdiffusive = args
-    flux.ρu += state.ρ * hyperdiffusive.hyperdiffusion.ν∇³u_h
-    flux.ρe += hyperdiffusive.hyperdiffusion.ν∇³u_h * state.ρu
-    flux.ρe += hyperdiffusive.hyperdiffusion.ν∇³h_tot * state.ρ
-    flux.moisture.ρq_tot += hyperdiffusive.hyperdiffusion.ν∇³q_tot * state.ρ
-end
-
 """
   DryBiharmonic{FT} <: HyperDiffusion
 
@@ -953,13 +944,6 @@ function transform_post_gradient_laplacian!(
     ν₄ = (aux.hyperdiffusion.Δ / 2)^4 / 2 / τ_timescale
     hyperdiffusive.hyperdiffusion.ν∇³u_h = ν₄ * ∇Δu_h
     hyperdiffusive.hyperdiffusion.ν∇³h_tot = ν₄ * ∇Δh_tot
-end
-
-function flux_second_order!(h::DryBiharmonic, flux::Grad, args)
-    @unpack state, hyperdiffusive = args
-    flux.ρu += state.ρ * hyperdiffusive.hyperdiffusion.ν∇³u_h
-    flux.ρe += hyperdiffusive.hyperdiffusion.ν∇³u_h * state.ρu
-    flux.ρe += hyperdiffusive.hyperdiffusion.ν∇³h_tot * state.ρ
 end
 
 # ### [Viscous Sponge](@id viscous-sponge)
@@ -1028,5 +1012,19 @@ function sponge_viscosity_modifier(
     end
     return (ν, D_t, τ)
 end
+
+const Biharmonic = Union{EquilMoistBiharmonic, DryBiharmonic}
+
+eq_tends(pv::PV, ::Biharmonic, ::Flux{SecondOrder}) where {PV <: Energy} =
+    (HyperdiffEnthalpicFlux{PV}(), HyperdiffViscousFlux{PV}())
+
+eq_tends(pv::PV, ::Biharmonic, ::Flux{SecondOrder}) where {PV <: Momentum} =
+    (HyperdiffViscousFlux{PV}(),)
+
+eq_tends(
+    pv::PV,
+    ::EquilMoistBiharmonic,
+    ::Flux{SecondOrder},
+) where {PV <: TotalMoisture} = (HyperdiffViscousFlux{PV}(),)
 
 end #module TurbulenceClosures.jl

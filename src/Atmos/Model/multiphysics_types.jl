@@ -29,6 +29,10 @@ struct Diffusion{PV} <: TendencyDef{Flux{SecondOrder}, PV} end
 struct MoistureDiffusion{PV <: Union{Mass, Momentum, Moisture}} <:
        TendencyDef{Flux{SecondOrder}, PV} end
 
+struct HyperdiffEnthalpicFlux{PV <: Energy} <: TendencyDef{Flux{FirstOrder}, PV} end
+struct HyperdiffViscousFlux{PV <: Union{Momentum, Energy, TotalMoisture}} <:
+       TendencyDef{Flux{FirstOrder}, PV} end
+
 export RemovePrecipitation
 """
     RemovePrecipitation{PV} <: TendencyDef{Source, PV}
