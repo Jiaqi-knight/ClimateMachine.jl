@@ -97,7 +97,6 @@ contourf(
 # Check magnitude
 println(0.5 .* sum(spectrum))
 
-dθ = π .* wts ./ sum(wts)
 dθ = π / length(wts)
 cosθ = sqrt.(1 .- sinθ .^ 2)
 area_factor = reshape(cosθ .* dθ .^ 2 / 4π, (1, length(cosθ)))
