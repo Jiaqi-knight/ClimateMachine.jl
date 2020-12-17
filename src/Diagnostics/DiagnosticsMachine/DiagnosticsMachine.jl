@@ -11,26 +11,16 @@ to define specialized variables and groups.
 module DiagnosticsMachine
 
 export DiagnosticVar,
-    dv_name,
-    dv_attrib,
-    dv_args,
-    dv_dims,
-    IntermediateValue,
-    @intermediate_value,
-    @intermediate_values,
     PointwiseDiagnostic,
     @pointwise_diagnostic,
-    @pointwise_diagnostic_impl,
     HorizontalAverage,
     @horizontal_average,
-    @horizontal_average_impl,
     ScalarDiagnostic,
     @scalar_diagnostic,
-    @scalar_diagnostic_impl,
     States,
-    DiagnosticsGroup,
-    @diagnostics_group,
-    DiagnosticsGroupParams
+    #DiagnosticsGroup,
+    @diagnostics_group
+    #DiagnosticsGroupParams
 
 using CUDA
 using Dates
@@ -42,12 +32,14 @@ using MPI
 using OrderedCollections
 using Printf
 
+using ..Diagnostics # temporarily, for DiagnosticsGroup
 using ..Atmos
 using ..BalanceLaws
 using ..ConfigTypes
 using ..DGMethods
 using ..GenericCallbacks
 using ..Mesh.Interpolation
+using ..Mesh.Topologies
 using ..MPIStateArrays
 using ..Spectra
 using ..TicToc
@@ -69,7 +61,6 @@ Base.@kwdef mutable struct Diagnostic_Settings
 end
 const Settings = Diagnostic_Settings()
 
-include("helpers.jl")
 include("onetime.jl")
 include("variables.jl")
 include("groups.jl")

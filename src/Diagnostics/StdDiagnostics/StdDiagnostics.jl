@@ -11,12 +11,14 @@ using MPI
 using OrderedCollections
 using Printf
 
+using ..Diagnostics # temporarily
 using ..Atmos
 using ..ConfigTypes
 using ..DGMethods
 using ..DiagnosticsMachine
-import ..DiagnosticsMachine: Settings, dv_name, dv_attrib, dv_args, dv_dimnames
+import ..DiagnosticsMachine: Settings, dv_name, dv_attrib, dv_args
 using ..Mesh.Interpolation
+using ..Mesh.Topologies
 using ..VariableTemplates
 using ..Writers
 

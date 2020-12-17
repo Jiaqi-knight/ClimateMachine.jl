@@ -1,3 +1,15 @@
+# Copy the specified kind of state's variables into an `MArray`.
+# This is GPU-safe.
+function extract_state(bl, state, ijk, e, st::AbstractStateType)
+    FT = eltype(state)
+    num_state = number_states(bl, st)
+    local_state = MArray{Tuple{num_state}, FT}(undef)
+    for s in 1:num_state
+        local_state[s] = state[ijk, s, e]
+    end
+    return Vars{vars_state(bl, st, FT)}(local_state)
+end
+
 # Return `true` if the specified symbol is a type name that is a subtype
 # of `BalanceLaw` and `false` otherwise.
 isa_bl(sym::Symbol) = any(
@@ -35,8 +47,8 @@ end
 function generate_init_dims(::NoInterpolation, cfg, dvtype_dvars_map)
     dimslst = Any[]
     for dvtype in keys(dvtype_dvars_map)
-        dimnames = dv_dg_dimnames(cfg, dvtype)
-        dimranges = dv_dg_dimranges(cfg, dvtype)
+        dimnames = DiagnosticsMachine.dv_dg_dimnames(cfg, dvtype)
+        dimranges = DiagnosticsMachine.dv_dg_dimranges(cfg, dvtype)
         for (dimname, dimrange) in zip(dimnames, dimranges)
             lhs = :($dimname)
             rhs = :(collect($dimrange), Dict())
@@ -63,7 +75,8 @@ function generate_init_dims(::InterpolationType, cfg, dvtype_dvars_map)
     end
 end
 
-get_dimnames(::NoInterpolation, cfg, dvtype) = dv_dg_dimnames(cfg, dvtype)
+get_dimnames(::NoInterpolation, cfg, dvtype) =
+    DiagnosticsMachine.dv_dg_dimnames(cfg, dvtype)
 get_dimnames(::InterpolationType, cfg, dvtype) = :(tuple(collect(keys(dims))))
 
 # Generate the `vars` dictionary for `Writers.init_data`.
@@ -71,9 +84,9 @@ function generate_init_vars(intrp, cfg, dvtype_dvars_map)
     varslst = Any[]
     for (dvtype, dvlst) in dvtype_dvars_map
         for dvar in dvlst
-            lhs = :($(dv_name(cfg, dvar)))
+            lhs = :($(DiagnosticsMachine.dv_name(cfg, dvar)))
             dimnames = get_dimnames(intrp, cfg, dvtype)
-            rhs = :($dimnames, FT, $(dv_attrib(cfg, dvar)))
+            rhs = :($dimnames, FT, $(DiagnosticsMachine.dv_attrib(cfg, dvar)))
             push!(varslst, :($lhs => $rhs))
         end
     end
@@ -103,9 +116,9 @@ function generate_init_fun(
 
             $(init_fun)(dgngrp, curr_time)
 
-            if dgngrp.onetime
-                collect_onetime(mpicomm, dg, Q)
-            end
+            # temporarily if dgngrp.onetime
+                DiagnosticsMachine.collect_onetime(mpicomm, dg, Q)
+            # temporarily end
 
             if mpirank == 0
                 dims = $(generate_init_dims(intrp(), cfg(), dvtype_dvars_map))
@@ -155,9 +168,9 @@ function generate_create_vars_arrays(::InterpolationType, cfg, dvtype_dvars_map)
     for (dvtype, dvlst) in dvtype_dvars_map
         dvt_short = uppers_in(split(String(Symbol(dvtype)), ".")[end])
         arr_name = Symbol("vars_", dvt_short, "_array")
-        npoints = dv_dg_points_length(cfg, dvtype)
+        npoints = DiagnosticsMachine.dv_dg_points_length(cfg, dvtype)
         nvars = length(dvlst)
-        nelems = dv_dg_elems_length(cfg, dvtype)
+        nelems = DiagnosticsMachine.dv_dg_elems_length(cfg, dvtype)
         cva_ex = quote
             $arr_name = Array{FT}(undef, $npoints, $nvars, $nelems)
             fill!($arr_name, 0)
@@ -175,12 +188,12 @@ function generate_collect_calls(::InterpolationType, cfg, dvtype_dvars_map)
         dvt = split(String(Symbol(dvtype)), ".")[end]
         dvt_short = uppers_in(dvt)
         arr_name = Symbol("vars_", dvt_short, "_array")
-        pt = dv_dg_points_index(cfg, dvtype)
-        elem = dv_dg_elems_index(cfg, dvtype)
+        pt = DiagnosticsMachine.dv_dg_points_index(cfg, dvtype)
+        elem = DiagnosticsMachine.dv_dg_elems_index(cfg, dvtype)
         var_impl = Symbol("dv_", dvt)
 
         for (v, dvar) in enumerate(dvlst)
-            impl_args = dv_args(cfg, dvar)
+            impl_args = DiagnosticsMachine.dv_args(cfg, dvar)
             AT1 = impl_args[1][2] # the type of the first argument
             if isa_bl(AT1)
                 impl_extra_params = ()
@@ -190,11 +203,11 @@ function generate_collect_calls(::InterpolationType, cfg, dvtype_dvars_map)
                 AN1 = impl_args[1][1] # the name of the first argument
                 impl_extra_params = (Symbol("bl.", AN1),)
             end
-            cc_ex = dv_op(
+            cc_ex = DiagnosticsMachine.dv_op(
                 cfg,
                 dvtype,
                 :($arr_name[$pt, $v, $elem]),
-                :($(var_impl)(
+                :(DiagnosticsMachine.$(var_impl)(
                     $cfg,
                     $dvar,
                     $(impl_extra_params...),
@@ -251,7 +264,7 @@ function generate_dg_reductions(::NoInterpolation, cfg, dvtype_dvars_map)
     for (dvtype, dvlst) in dvtype_dvars_map
         dvt_short = uppers_in(split(String(Symbol(dvtype)), ".")[end])
         arr_name = Symbol("vars_", dvt_short, "_array")
-        red_ex = dv_reduce(cfg, dvtype, arr_name)
+        red_ex = DiagnosticsMachine.dv_reduce(cfg, dvtype, arr_name)
         push!(red_exs, red_ex)
     end
 
@@ -404,7 +417,7 @@ function generate_varvals(::NoInterpolation, cfg, dvtype_dvars_map)
         arr_name = Symbol("vars_", dvt_short, "_array")
         for (v, dvar) in enumerate(dvlst)
             vv_ex = quote
-                varvals[$(dv_name(cfg, dvar))] =
+                varvals[$(DiagnosticsMachine.dv_name(cfg, dvar))] =
                     reshape(view($(arr_name), :, $v, :), :)
             end
             push!(vv_exs, vv_ex)
@@ -421,7 +434,8 @@ function generate_varvals(::InterpolationType, cfg, dvtype_dvars_map)
         acc_arr_name = Symbol("acc_vars_", dvt_short, "_array")
         for (v, dvar) in enumerate(dvlst)
             vv_ex = quote
-                varvals[$(dv_name(cfg, dvar))] = $(acc_arr_name)[:, :, :, $v]
+                varvals[$(DiagnosticsMachine.dv_name(cfg, dvar))] =
+                    $(acc_arr_name)[:, :, :, $v]
             end
             push!(vv_exs, vv_ex)
         end
@@ -493,8 +507,8 @@ function generate_fini_fun(name, args...)
     end
 end
 
-# Generate `setup_$(name)(...)` which will create the `DiagnosticsGroup`
-# for $name when called.
+# Generate `$(name)(...)` which will create the `DiagnosticsGroup` for 
+# $name when called.
 function generate_setup_fun(
     name,
     config_type,
@@ -507,7 +521,7 @@ function generate_setup_fun(
     collect_name = Symbol(name, "_collect")
     fini_name = Symbol(name, "_fini")
 
-    setup_name = Symbol("setup_", name)
+    setup_name = Symbol(name)
     intrp = getfield(@__MODULE__, interpolate)
 
     no_intrp_err = quote end
@@ -528,10 +542,9 @@ function generate_setup_fun(
     end
     quote
         function $setup_name(
-            ::$config_type,
-            params::$params_type,
             interval::String,
             out_prefix::String,
+            params::$params_type = nothing,
             writer = NetCDFWriter(),
             interpol = nothing,
         ) where {
@@ -544,16 +557,16 @@ function generate_setup_fun(
                 $(no_intrp_err)
             end
 
-            return DiagnosticsGroup(
+            return DiagnosticsMachine.DiagnosticsGroup(
                 $name,
                 $init_name,
-                $collect_name,
                 $fini_name,
+                $collect_name,
                 interval,
                 out_prefix,
                 writer,
                 interpol,
-                $(intrp() isa NoInterpolation),
+                # temporarily $(intrp() isa NoInterpolation),
                 params,
             )
         end

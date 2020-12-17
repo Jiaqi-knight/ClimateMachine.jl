@@ -4,13 +4,7 @@
 A diagnostic with the same dimensions as the original grid (DG or interpolated).
 """
 abstract type PointwiseDiagnostic <: DiagnosticVar end
-dv_PointwiseDiagnostic(
-    ::ClimateMachineConfigType,
-    ::PointwiseDiagnostic,
-    ::BalanceLaw,
-    ::States,
-    ::AbstractFloat,
-) = nothing
+function dv_PointwiseDiagnostic end
 
 function dv_dg_points_length(
     ::ClimateMachineConfigType,
@@ -46,14 +40,6 @@ function dv_dg_dimranges(
     ::Type{PointwiseDiagnostic},
 )
     (:(1:npoints), :(1:nrealelem))
-end
-
-function dv_dimnames(
-    ::ClimateMachineConfigType,
-    ::Type{PointwiseDiagnostic},
-    out_dims::OrderedDict,
-)
-    tuple(collect(keys(out_dims))...)
 end
 
 function dv_op(

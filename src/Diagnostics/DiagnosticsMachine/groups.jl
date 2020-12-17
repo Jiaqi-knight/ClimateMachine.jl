@@ -1,3 +1,4 @@
+#=
 """
     DiagnosticsGroupParams
 
@@ -34,8 +35,8 @@ mutable struct DiagnosticsGroup{
     DiagnosticsGroup(
         name,
         init,
-        collect,
         fini,
+        collect,
         interval,
         out_prefix,
         writer,
@@ -94,7 +95,7 @@ function GenericCallbacks.fini!(dgngrp::DiagnosticsGroup, solver, Q, param, t)
     dgngrp.fini(dgngrp, t)
     return nothing
 end
-
+=#
 abstract type InterpolationType end
 struct NoInterpolation <: InterpolationType end
 struct InterpolateAfterCollection <: InterpolationType end

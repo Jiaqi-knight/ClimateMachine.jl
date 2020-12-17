@@ -9,13 +9,15 @@ function collect_onetime(mpicomm, dg, Q)
     if !Collected.onetime_done
         FT = eltype(Q)
         grid = dg.grid
+        grid_info = basic_grid_info(dg)
+        topl_info = basic_topology_info(grid.topology)
         topology = grid.topology
-        N = polynomialorder(grid)
-        Nq = N + 1
-        Nqk = dimensionality(grid) == 2 ? 1 : Nq
-        nrealelem = length(topology.realelems)
-        nvertelem = topology.stacksize
-        nhorzelem = div(nrealelem, nvertelem)
+        Nqk = grid_info.Nqk
+        Nqh = grid_info.Nqh
+        npoints = prod(grid_info.Nq)
+        nrealelem = topl_info.nrealelem
+        nvertelem = topl_info.nvertelem
+        nhorzelem = topl_info.nhorzrealelem
 
         vgeo = array_device(Q) isa CPU ? grid.vgeo : Array(grid.vgeo)
 
@@ -25,7 +27,6 @@ function collect_onetime(mpicomm, dg, Q)
             e = ev + (eh - 1) * nvertelem
             for k in 1:Nqk, j in 1:Nq, i in 1:Nq
                 ijk = i + Nq * ((j - 1) + Nq * (k - 1))
-                evk = Nqk * (ev - 1) + k
                 MH = vgeo[ijk, grid.MHid, e]
                 Collected.ΣMH_z[k, ev] += MH
             end

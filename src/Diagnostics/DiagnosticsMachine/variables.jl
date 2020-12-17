@@ -112,6 +112,16 @@ function dv_dimranges(
     (:(1:npoints), :(1:nrealelem))
 end
 
+"""
+"""
+function dv_op end
+
+"""
+"""
+function dv_reduce end
+
+####
+#
 # Generate a standardized type name from the diagnostic variable name.
 function dv_type_name(dvtype, config_type, name)
     let uppers_in(s) =
