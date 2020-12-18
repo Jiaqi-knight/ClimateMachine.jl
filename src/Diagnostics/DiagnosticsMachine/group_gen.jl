@@ -33,6 +33,7 @@ function generate_common_defs()
         topl_info = basic_topology_info(grid.topology)
         Nq1 = grid_info.Nq[1]
         Nq2 = grid_info.Nq[2]
+        Nqh = grid_info.Nqh
         Nqk = grid_info.Nqk
         npoints = prod(grid_info.Nq)
         nrealelem = topl_info.nrealelem
@@ -78,7 +79,7 @@ end
 
 get_dimnames(::NoInterpolation, cfg, dvtype) =
     DiagnosticsMachine.dv_dg_dimnames(cfg, dvtype)
-get_dimnames(::InterpolationType, cfg, dvtype) = :(tuple(collect(keys(dims))))
+get_dimnames(::InterpolationType, cfg, dvtype) = :(tuple(collect(keys(dims))...))
 
 # Generate the `vars` dictionary for `Writers.init_data`.
 function generate_init_vars(intrp, cfg, dvtype_dvars_map)
@@ -310,11 +311,20 @@ function generate_interpolations(
         iarr_name = Symbol("i", arr_name)
         acc_arr_name = Symbol("acc_", arr_name)
         ic_ex = quote
+            # TODO: `interpolate_local!` expects arrays of the same type
+            # as `grid`. This should be solved when we make this GPU-capable.
+            if !(array_device(Q) isa CPU)
+                ArrayType = arraytype(grid)
+                $arr_name = ArrayType($arr_name)
+            end
             $iarr_name = similar($arr_name, interpol.Npl, $nvars)
             interpolate_local!(interpol, $arr_name, $iarr_name)
             # TODO: projection
             $acc_arr_name =
                 accumulate_interpolated_data(mpicomm, interpol, $iarr_name)
+            if !(array_device(Q) isa CPU)
+                $acc_arr_name = Array($acc_arr_name)
+            end
         end
         push!(ic_exs, ic_ex)
     end
@@ -393,7 +403,7 @@ function generate_i_collections(
     dvtype_dvars_map,
 )
     quote
-        (x1, x2, x3) = map(k -> dims[k][1], collect(keys(dims)))
+        (x1, x2, x3) = map(k -> length(dims[k][1]), collect(keys(dims)))
         for x in 1:x1, y in 1:x2, z in 1:x3
             istate = Vars{vars_state(bl, Prognostic(), FT)}(view(
                 all_state_data,
@@ -561,7 +571,7 @@ function generate_setup_fun(
         function $setup_name(
             interval::String,
             out_prefix::String,
-            params::$params_type = nothing,
+            params::$params_type = nothing;
             writer = NetCDFWriter(),
             interpol = nothing,
         ) where {

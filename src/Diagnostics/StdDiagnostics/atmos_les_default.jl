@@ -12,8 +12,8 @@ using ..DiagnosticsMachine
     # user initialization function
     (_...) -> nothing,
     # CollectOnInterpolatedGrid | InterpolateAfterCollection | NoInterpolation
-    NoInterpolation,
-    #InterpolateAfterCollection,
+    #NoInterpolation,
+    InterpolateAfterCollection,
     #CollectOnInterpolatedGrid,
     # simple horizontal averages
     u,

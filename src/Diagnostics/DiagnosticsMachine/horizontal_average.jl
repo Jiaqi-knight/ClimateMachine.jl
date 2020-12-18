@@ -38,7 +38,12 @@ function dv_dg_dimnames(::ClimateMachineConfigType, ::Type{HorizontalAverage})
     ("z",)
 end
 function dv_dg_dimranges(::ClimateMachineConfigType, ::Type{HorizontalAverage})
-    (:(get_z(grid)),)
+    z = quote
+        ijk_range = 1:Nqh:npoints
+        e_range = 1:nhorzelem:nrealelem
+        reshape(grid.vgeo[ijk_range, grid.x3id, e_range], :)
+    end
+    (z,)
 end
 
 function dv_op(::ClimateMachineConfigType, ::Type{HorizontalAverage}, lhs, rhs)
