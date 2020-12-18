@@ -1,6 +1,5 @@
 Base.@kwdef mutable struct CollectedDiagnostics
     onetime_done::Bool = false
-    zvals::Union{Nothing, Array} = nothing
     ΣMH_z::Union{Nothing, Array} = nothing
 end
 const Collected = CollectedDiagnostics()
@@ -12,8 +11,9 @@ function collect_onetime(mpicomm, dg, Q)
         grid_info = basic_grid_info(dg)
         topl_info = basic_topology_info(grid.topology)
         topology = grid.topology
-        Nqk = grid_info.Nqk
-        Nqh = grid_info.Nqh
+        Nq1 = grid_info.Nq[1]
+        Nq2 = grid_info.Nq[2]
+        Nq3 = grid_info.Nqk
         npoints = prod(grid_info.Nq)
         nrealelem = topl_info.nrealelem
         nvertelem = topl_info.nvertelem
@@ -21,12 +21,12 @@ function collect_onetime(mpicomm, dg, Q)
 
         vgeo = array_device(Q) isa CPU ? grid.vgeo : Array(grid.vgeo)
 
-        Collected.ΣMH_z = zeros(FT, Nqk, nvertelem)
+        Collected.ΣMH_z = zeros(FT, Nq3, nvertelem)
 
         for eh in 1:nhorzelem, ev in 1:nvertelem
             e = ev + (eh - 1) * nvertelem
-            for k in 1:Nqk, j in 1:Nq, i in 1:Nq
-                ijk = i + Nq * ((j - 1) + Nq * (k - 1))
+            for k in 1:Nq3, j in 1:Nq2, i in 1:Nq1
+                ijk = i + Nq1 * ((j - 1) + Nq2 * (k - 1))
                 MH = vgeo[ijk, grid.MHid, e]
                 Collected.ΣMH_z[k, ev] += MH
             end

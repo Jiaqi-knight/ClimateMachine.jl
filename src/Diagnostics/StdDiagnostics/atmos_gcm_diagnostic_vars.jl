@@ -145,7 +145,7 @@ end
     "mass fraction of total water in air (qv+ql+qi)",
     "mass_fraction_of_water_in_air",
 ) do (
-    m::Union{EquilMoist, NonEquilMoist},
+    moisture::Union{EquilMoist, NonEquilMoist},
     atmos::AtmosModel,
     states::States,
     curr_time,
@@ -161,7 +161,7 @@ end
     "mass fraction of liquid water in air",
     "mass_fraction_of_cloud_liquid_water_in_air",
 ) do (
-    m::Union{EquilMoist, NonEquilMoist},
+    moisture::Union{EquilMoist, NonEquilMoist},
     atmos::AtmosModel,
     states::States,
     curr_time,
@@ -180,7 +180,7 @@ end
     "mass fraction of water vapor in air",
     "specific_humidity",
 ) do (
-    m::Union{EquilMoist, NonEquilMoist},
+    moisture::Union{EquilMoist, NonEquilMoist},
     atmos::AtmosModel,
     states::States,
     curr_time,
@@ -199,7 +199,7 @@ end
     "mass fraction of ice in air",
     "mass_fraction_of_cloud_ice_in_air",
 ) do (
-    m::Union{EquilMoist, NonEquilMoist},
+    moisture::Union{EquilMoist, NonEquilMoist},
     atmos::AtmosModel,
     states::States,
     curr_time,
@@ -218,7 +218,7 @@ end
     "virtual potential temperature",
     "virtual_potential_temperature",
 ) do (
-    m::Union{EquilMoist, NonEquilMoist},
+    moisture::Union{EquilMoist, NonEquilMoist},
     atmos::AtmosModel,
     states::States,
     curr_time,
@@ -237,7 +237,7 @@ end
     "liquid-ice potential temperature",
     "",
 ) do (
-    m::Union{EquilMoist, NonEquilMoist},
+    moisture::Union{EquilMoist, NonEquilMoist},
     atmos::AtmosModel,
     states::States,
     curr_time,

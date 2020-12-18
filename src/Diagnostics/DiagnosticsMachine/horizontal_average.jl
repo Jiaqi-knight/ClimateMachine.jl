@@ -4,13 +4,7 @@
 A horizontal reduction into a single vertical dimension.
 """
 abstract type HorizontalAverage <: DiagnosticVar end
-dv_HorizontalAverage(
-    ::ClimateMachineConfigType,
-    ::HorizontalAverage,
-    ::BalanceLaw,
-    ::States,
-    ::AbstractFloat,
-) = nothing
+function dv_HorizontalAverage end
 
 # replace these with a `dv_array_dims` that takes `nvars` and returns the dims for the array
 # or create the array? Use `Array`? `similar`?
@@ -58,7 +52,9 @@ function dv_reduce(
     quote
         MPI.Reduce!($array_name, +, 0, mpicomm)
         if mpirank == 0
-            $array_name ./= Collected.ΣMH_z
+            for v in 1:size($array_name, 2)
+                $(array_name)[:, v, :] ./= DiagnosticsMachine.Collected.ΣMH_z
+            end
         end
     end
 end
@@ -71,6 +67,18 @@ macro horizontal_average(impl, config_type, name)
     esc(MacroTools.prewalk(unblock, iex))
 end
 
+"""
+    @horizontal_average(
+        impl,
+        config_type,
+        name,
+        units,
+        long_name,
+        standard_name,
+    )
+
+Define a horizontal average diagnostic variable.
+"""
 macro horizontal_average(
     impl,
     config_type,

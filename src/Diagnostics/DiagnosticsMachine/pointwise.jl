@@ -70,6 +70,18 @@ macro pointwise_diagnostic(impl, config_type, name)
     esc(MacroTools.prewalk(unblock, iex))
 end
 
+"""
+    @pointwise_diagnostic(
+        impl,
+        config_type,
+        name,
+        units,
+        long_name,
+        standard_name,
+    )
+
+Define a point-wise diagnostic variable.
+"""
 macro pointwise_diagnostic(
     impl,
     config_type,

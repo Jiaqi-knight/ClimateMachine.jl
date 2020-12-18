@@ -31,8 +31,9 @@ function generate_common_defs()
         grid = dg.grid
         grid_info = basic_grid_info(dg)
         topl_info = basic_topology_info(grid.topology)
+        Nq1 = grid_info.Nq[1]
+        Nq2 = grid_info.Nq[2]
         Nqk = grid_info.Nqk
-        Nqh = grid_info.Nqh
         npoints = prod(grid_info.Nq)
         nrealelem = topl_info.nrealelem
         nvertelem = topl_info.nvertelem
@@ -117,7 +118,7 @@ function generate_init_fun(
             $(init_fun)(dgngrp, curr_time)
 
             # temporarily if dgngrp.onetime
-                DiagnosticsMachine.collect_onetime(mpicomm, dg, Q)
+            DiagnosticsMachine.collect_onetime(mpicomm, dg, Q)
             # temporarily end
 
             if mpirank == 0
@@ -201,7 +202,7 @@ function generate_collect_calls(::InterpolationType, cfg, dvtype_dvars_map)
                 AT2 = impl_args[2][2] # the type of the second argument
                 @assert isa_bl(AT2)
                 AN1 = impl_args[1][1] # the name of the first argument
-                impl_extra_params = (Symbol("bl.", AN1),)
+                impl_extra_params = (:(getproperty(bl, $(QuoteNode(AN1)))),)
             end
             cc_ex = DiagnosticsMachine.dv_op(
                 cfg,
@@ -242,15 +243,31 @@ function generate_dg_collections(
         cache = Dict{Symbol, Any}()
         for eh in 1:nhorzelem, ev in 1:nvertelem
             e = ev + (eh - 1) * nvertelem
-            for k in 1:Nqk, j in 1:Nq, i in 1:Nq
-                ijk = i + Nq * ((j - 1) + Nq * (k - 1))
-                evk = Nqk * (ev - 1) + k
+            for k in 1:Nqk, j in 1:Nq2, i in 1:Nq1
+                ijk = i + Nq1 * ((j - 1) + Nq2 * (k - 1))
                 MH = vgeo[ijk, grid.MHid, e]
-                states = States(
-                    extract_state(bl, state_data, ijk, e, Prognostic()),
-                    extract_state(bl, gradflux_data, ijk, e, GradientFlux()),
-                    extract_state(bl, aux_data, ijk, e, Auxiliary()),
+                state = DiagnosticsMachine.extract_state(
+                    bl,
+                    state_data,
+                    ijk,
+                    e,
+                    Prognostic(),
                 )
+                gradflux = DiagnosticsMachine.extract_state(
+                    bl,
+                    gradflux_data,
+                    ijk,
+                    e,
+                    GradientFlux(),
+                )
+                aux = DiagnosticsMachine.extract_state(
+                    bl,
+                    aux_data,
+                    ijk,
+                    e,
+                    Auxiliary(),
+                )
+                states = States(state, gradflux, aux)
                 $(generate_collect_calls(intrp, cfg, dvtype_dvars_map))
             end
         end

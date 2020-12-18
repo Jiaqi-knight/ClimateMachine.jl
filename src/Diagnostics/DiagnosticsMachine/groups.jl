@@ -106,8 +106,8 @@ struct CollectOnInterpolatedGrid <: InterpolationType end
 
 Generate the functions needed to establish and
 use a [`DiagnosticsGroup`](@ref) containing the named
-[`DiagnosticVar`](@ref)s. In particular, this creates `setup_$(name)`,
-which creates the diagnostics group.
+[`DiagnosticVar`](@ref)s. In particular, this creates `$(name)()`, which
+creates the diagnostics group.
 
 # Arguments
 - `name`: a string that uniquely identifies the group.

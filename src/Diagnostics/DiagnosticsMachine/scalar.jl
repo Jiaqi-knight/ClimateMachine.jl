@@ -4,13 +4,7 @@
 A reduction into a scalar value.
 """
 abstract type ScalarDiagnostic <: DiagnosticVar end
-dv_ScalarDiagnostic(
-    ::ClimateMachineConfigType,
-    ::ScalarDiagnostic,
-    ::BalanceLaw,
-    ::States,
-    ::AbstractFloat,
-) = nothing
+function dv_ScalarDiagnostic end
 
 function dv_dg_points_length(
     ::ClimateMachineConfigType,
@@ -52,6 +46,18 @@ macro scalar_diagnostic(impl, config_type, name)
     esc(MacroTools.prewalk(unblock, iex))
 end
 
+"""
+    @scalar_diagnostic(
+        impl,
+        config_type,
+        name,
+        units,
+        long_name,
+        standard_name,
+    )
+
+Define a scalar diagnostic variable.
+"""
 macro scalar_diagnostic(
     impl,
     config_type,

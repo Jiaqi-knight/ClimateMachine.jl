@@ -10,15 +10,28 @@ using KernelAbstractions
 using MPI
 using OrderedCollections
 using Printf
+using StaticArrays
 
 using ..Diagnostics # temporarily
 using ..Atmos
+using ..BalanceLaws
 using ..ConfigTypes
 using ..DGMethods
 using ..DiagnosticsMachine
-import ..DiagnosticsMachine: Settings, dv_name, dv_attrib, dv_args
+import ..DiagnosticsMachine:
+    Settings,
+    dv_name,
+    dv_attrib,
+    dv_args,
+    dv_PointwiseDiagnostic,
+    dv_HorizontalAverage,
+    dv_ScalarDiagnostic
+using ..Mesh.Grids
 using ..Mesh.Interpolation
 using ..Mesh.Topologies
+using ..MPIStateArrays
+using ..Thermodynamics
+using ..TurbulenceClosures
 using ..VariableTemplates
 using ..Writers
 

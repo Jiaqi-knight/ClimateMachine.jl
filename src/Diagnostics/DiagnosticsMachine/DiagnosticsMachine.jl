@@ -13,14 +13,17 @@ module DiagnosticsMachine
 export DiagnosticVar,
     PointwiseDiagnostic,
     @pointwise_diagnostic,
+    dv_PointwiseDiagnostic,
     HorizontalAverage,
     @horizontal_average,
+    dv_HorizontalAverage,
     ScalarDiagnostic,
     @scalar_diagnostic,
+    dv_ScalarDiagnostic,
     States,
     #DiagnosticsGroup,
     @diagnostics_group
-    #DiagnosticsGroupParams
+#DiagnosticsGroupParams
 
 using CUDA
 using Dates
@@ -31,6 +34,7 @@ using MacroTools: prewalk
 using MPI
 using OrderedCollections
 using Printf
+using StaticArrays
 
 using ..Diagnostics # temporarily, for DiagnosticsGroup
 using ..Atmos
@@ -38,6 +42,7 @@ using ..BalanceLaws
 using ..ConfigTypes
 using ..DGMethods
 using ..GenericCallbacks
+using ..Mesh.Grids
 using ..Mesh.Interpolation
 using ..Mesh.Topologies
 using ..MPIStateArrays
