@@ -6,6 +6,11 @@ be used directly by experiments.
 """
 module StdDiagnostics
 
+using CLIMAParameters
+using CLIMAParameters.Planet
+using CLIMAParameters.Atmos
+using CLIMAParameters.SubgridScale
+
 using KernelAbstractions
 using MPI
 using OrderedCollections
@@ -34,8 +39,6 @@ using ..Thermodynamics
 using ..TurbulenceClosures
 using ..VariableTemplates
 using ..Writers
-
-export setup_atmos_default_diagnostics
 
 
 # Pre-defined diagnostic variables

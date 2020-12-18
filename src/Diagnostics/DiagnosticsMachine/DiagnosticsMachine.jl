@@ -104,4 +104,6 @@ function init(
     Settings.output_dir = output_dir
 end
 
+include("atmos_diagnostic_funs.jl")
+
 end # module DiagnosticsMachine

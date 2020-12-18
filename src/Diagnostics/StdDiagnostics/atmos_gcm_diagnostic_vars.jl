@@ -110,6 +110,7 @@ end
     ts = get!(cache, :ts) do
         recover_thermo_state(atmos, states.prognostic, states.auxiliary)
     end
+    e_tot = states.prognostic.ρe / states.prognostic.ρ
     total_specific_enthalpy(ts, e_tot)
 end
 
